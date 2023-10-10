@@ -12,9 +12,7 @@ export const useAuthStore = create(
             Users: (state.Users = user),
             isAuthenticated: (state.isAuthenticated = true),
           })),
-        onViewUser: () => {
-          get().Users;
-        },
+
         onLogOut: () =>
           set((state) => ({
             user: (state.Users = null),

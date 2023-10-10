@@ -4,8 +4,10 @@ import {
   Flex,
   FormControl,
   FormLabel,
+  Icon,
   Input,
 } from "@chakra-ui/react";
+import { AiOutlineSearch } from "react-icons/ai";
 
 const Search = ({ top, height }) => {
   return (
@@ -69,13 +71,12 @@ const Search = ({ top, height }) => {
 
       <Button
         bg={"#0D0C22"}
-        fontSize={20}
         fontWeight={600}
         color={"#f4f4f4"}
         _hover={{}}
         padding={8}
         rounded={20}>
-        Q
+        <Icon as={AiOutlineSearch} fontSize={28} fontWeight={600} />
       </Button>
     </Flex>
   );

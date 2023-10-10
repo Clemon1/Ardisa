@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import users from "../model/usersModel";
 import bcrypt from "bcrypt";
 import { generateToken } from "../middleware/JWT";
+import { log } from "console";
 
 // Admin Registration
 export const adminRegister = async (req: Request, res: Response) => {
@@ -69,9 +70,11 @@ export const adminLogin = async (req: Request, res: Response) => {
       return res.status(401).json("Invalid Password");
     }
 
-    const { password, ...info } = checkUser;
+    const { password, ...other } = checkUser.toObject();
     const token = generateToken({ user: checkUser.id, role: checkUser.role });
-    res.status(200).json(info);
+    console.log("logged in", other);
+
+    res.status(200).json({ other, token });
   } catch (err: any) {
     res.status(500).json(err.message);
   }
