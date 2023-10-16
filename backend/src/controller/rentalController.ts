@@ -1,11 +1,28 @@
 import { Request, Response } from "express";
 import rentals from "../model/rentalModel";
 import users from "../model/usersModel";
+import { recommendedHotels } from "../middleware/recommendAlgo";
+import cloudinary from "../middleware/cloudinary";
 // View all rental homes
-
+interface view {
+  _doc: object;
+}
 export const viewHome = async (req: Request, res: Response) => {
   try {
-    const findHome = await rentals.find();
+    const { search } = req.query;
+    let findHome;
+    search === ""
+      ? (findHome = await rentals.find())
+      : (findHome = await rentals.find({
+          $or: [
+            { address: { $regex: search, $options: "i" } },
+            { title: { $regex: search, $options: "i" } },
+            {
+              checkIN: { $regex: search, $options: "i" },
+            },
+            { checkOut: { $regex: search, $options: "i" } },
+          ],
+        }));
     const newRentals = findHome.map((home) => {
       const averageRatingLenght: any = home.ratings?.length;
       let averageRating: number = 0;
@@ -16,12 +33,18 @@ export const viewHome = async (req: Request, res: Response) => {
           0,
         );
         averageRating = totalRating / averageRatingLenght;
-
-        return {
-          ...home,
-          ratings: averageRating,
-        };
       }
+      return {
+        _id: home._id,
+        title: home.title,
+        description: home.description,
+        address: home.address,
+        ratings: averageRating,
+        photos: home.photos,
+        perks: home.perks,
+        price: home.price,
+        maxGuest: home.maxGuest,
+      };
     });
     res.status(200).json(newRentals);
   } catch (err: any) {
@@ -44,20 +67,38 @@ export const viewSingleHome = async (req: Request, res: Response) => {
       averageRating = totalRatings / totalLenght;
     }
 
-    res.status(200).json({ ...singleHome, rating: averageRating });
+    res.status(200).json({ singleHome, rating: averageRating });
   } catch (err: any) {
     res.status(500).json(err.message);
   }
 };
 // Recommendation Algorithm for users based on saved Previous bookings and Bookmarked homes
-export const viewSuggestHome = async (req: Request, res: Response) => {};
-//Search and Filter Rental Home
-export const viewSearchFilter = async (req: Request, res: Response) => {};
+export const viewSuggestHome = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const recommend = await recommendedHotels(userId);
+    res.status(200).json(recommend);
+  } catch (error: any) {
+    res.status(500).json(error.message);
+  }
+};
 
 // Create rental home
 export const createRentalHomes = async (req: Request, res: Response) => {
   try {
-    const rntHome = new rentals(req.body);
+    const { title, description, address, perks, price, maxGuest } = req.body;
+    const photo: any = req.file?.path;
+    const cloudUpload = await cloudinary.uploader.upload(photo);
+    const rntHome = new rentals({
+      title,
+      description,
+      address,
+      photos: cloudUpload.url,
+      perks,
+      price,
+      maxGuest,
+    });
+
     const newHome = await rntHome.save();
     res.status(200).json(newHome);
   } catch (err: any) {
@@ -116,4 +157,7 @@ export const updateRentalHomes = async (req: Request, res: Response) => {
 };
 
 // Delete existing rental home
-export const deleteRentalHomes = async (req: Request, res: Response) => {};
+// export const deleteRentalHomes = async (req: Request, res: Response) =>
+//   {
+
+//  }

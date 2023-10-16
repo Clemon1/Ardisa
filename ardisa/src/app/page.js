@@ -1,18 +1,23 @@
 "use client";
-import { Box, Flex, Text } from "@chakra-ui/react";
+import { Box, Button, Flex, Icon, Text } from "@chakra-ui/react";
 
 import Img1 from "../assets/imag11.jpg";
 import Search from "@/components/search/search";
 import { OurImage } from "@/components/ImageOptimizer";
+import { useDarkMode } from "@/Store/darkModeStore";
+import { useLayoutEffect } from "react";
 
-export default function Home() {
+const Home = () => {
+  const darkMode = useDarkMode((state) => state.darkMode);
+
   return (
     <div>
       <Box
         width={"100%"}
         height={"100vh"}
         px={[1, 2, 30, 90, 100]}
-        bg={"#DEF5F4"}>
+        bg={!darkMode ? "#DEF5F4" : "gray.800"}
+        transition={"0.6s ease-in"}>
         <Flex
           flexDirection={"column"}
           width={"full"}
@@ -65,4 +70,6 @@ export default function Home() {
       </Box>
     </div>
   );
-}
+};
+
+export default Home;

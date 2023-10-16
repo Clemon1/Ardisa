@@ -9,6 +9,7 @@ interface IRentalService {
   photos?: Array<string>;
   perks: Array<string>;
   price: number;
+  bookedDates: [];
   maxGuest: number;
   isDeleted: boolean;
 }
@@ -40,11 +41,10 @@ const rentalSchema = new Schema<IRentalService>(
         Max: 5,
       },
     ],
-    photos: [
-      {
-        type: String,
-      },
-    ],
+    photos: {
+      type: String,
+    },
+
     price: {
       type: Number,
       required: true,

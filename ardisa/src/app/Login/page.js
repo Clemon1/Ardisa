@@ -65,7 +65,7 @@ const Login = () => {
       <Flex
         width={"full"}
         bg={"#DEF5F4"}
-        height={"90vh"}
+        height={"100vh"}
         justifyContent={"center"}
         alignItems={"center"}>
         <Box

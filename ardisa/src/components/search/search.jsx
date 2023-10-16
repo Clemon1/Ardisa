@@ -1,3 +1,4 @@
+"use client";
 import {
   Button,
   Divider,
@@ -7,9 +8,14 @@ import {
   Icon,
   Input,
 } from "@chakra-ui/react";
+import Link from "next/link";
+import { useState } from "react";
 import { AiOutlineSearch } from "react-icons/ai";
 
-const Search = ({ top, height }) => {
+const Search = ({ top, height, handleLocation, filter }) => {
+  const handleSearch = (e) => {
+    e.preventDefault();
+  };
   return (
     <Flex
       width={["full", "80%", "80%", "86%", "85%"]}
@@ -32,6 +38,7 @@ const Search = ({ top, height }) => {
           type='text'
           placeholder='Search destination'
           rounded={14}
+          onChange={(e) => handleLocation(e.target.value)}
         />
       </FormControl>
       <Divider orientation='vertical' />
@@ -72,6 +79,7 @@ const Search = ({ top, height }) => {
       <Button
         bg={"#0D0C22"}
         fontWeight={600}
+        onClick={handleSearch}
         color={"#f4f4f4"}
         _hover={{}}
         padding={8}

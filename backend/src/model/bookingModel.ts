@@ -6,7 +6,8 @@ interface IbookingService {
   price: number;
   checkIN: Date;
   checkOUT: Date;
-  numberOfGuest: number;
+  numOfGuest: number;
+  status: string;
 }
 
 const bookingSchema = new Schema<IbookingService>(
@@ -32,6 +33,15 @@ const bookingSchema = new Schema<IbookingService>(
     checkOUT: {
       type: Date,
       required: true,
+    },
+    numOfGuest: {
+      type: Number,
+      required: true,
+    },
+    status: {
+      type: String,
+      enum: ["active", "cancelled"],
+      default: "active",
     },
   },
   {

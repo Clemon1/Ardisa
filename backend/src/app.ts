@@ -3,6 +3,8 @@ import express, { Express, Request, Response } from "express";
 import { dbConnect } from "./db/dbConnect";
 import cors from "cors";
 import authRouter from "./router/authRouter";
+import bookingRouter from "./router/bookingRoutes";
+import roomRouter from "./router/roomsRouter";
 
 dotenv.config();
 const app: Express = express();
@@ -23,5 +25,7 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.use("/ardisa", authRouter);
+app.use("/v1/rentals", roomRouter);
+app.use("/v1/booking", bookingRouter);
 
 app.listen(4000, (): void => console.log("TS App listening on port 4000"));
