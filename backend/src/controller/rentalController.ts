@@ -145,9 +145,24 @@ export const bookmarkRentalHomes = async (req: Request, res: Response) => {
 export const updateRentalHomes = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const { title, description, address, perks, price, maxGuest } = req.body;
+    const photo: any = req.file?.path;
+    // const cloudUpload = await cloudinary.upload(photo);
+
+    const hotel = {
+      title,
+      description,
+      address,
+      perks,
+      price,
+      maxGuest,
+    };
+    // if (req.file?.path) {
+    //   hotel.photos : photo.,
+    // }
     const updateHome = await rentals.findByIdAndUpdate(
       id,
-      { $set: req.body },
+      { $set: hotel },
       { new: true },
     );
     res.status(200).json(updateHome);

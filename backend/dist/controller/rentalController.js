@@ -147,9 +147,24 @@ const bookmarkRentalHomes = (req, res) => __awaiter(void 0, void 0, void 0, func
 exports.bookmarkRentalHomes = bookmarkRentalHomes;
 // Update existing rental home
 const updateRentalHomes = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _d;
     try {
         const { id } = req.params;
-        const updateHome = yield rentalModel_1.default.findByIdAndUpdate(id, { $set: req.body }, { new: true });
+        const { title, description, address, perks, price, maxGuest } = req.body;
+        const photo = (_d = req.file) === null || _d === void 0 ? void 0 : _d.path;
+        // const cloudUpload = await cloudinary.upload(photo);
+        const hotel = {
+            title,
+            description,
+            address,
+            perks,
+            price,
+            maxGuest,
+        };
+        // if (req.file?.path) {
+        //   hotel.photos : photo.,
+        // }
+        const updateHome = yield rentalModel_1.default.findByIdAndUpdate(id, { $set: hotel }, { new: true });
         res.status(200).json(updateHome);
     }
     catch (err) {
