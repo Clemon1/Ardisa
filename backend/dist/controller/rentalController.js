@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateRentalHomes = exports.roomRecommendation = exports.bookmarkRentalHomes = exports.createRentalHomes = exports.viewSuggestHome = exports.viewSingleHome = exports.viewHome = void 0;
+exports.roomRecommendation = exports.bookmarkRentalHomes = exports.createRentalHomes = exports.viewSuggestHome = exports.viewSingleHome = exports.viewHome = void 0;
 const rentalModel_1 = __importDefault(require("../model/rentalModel"));
 const usersModel_1 = __importDefault(require("../model/usersModel"));
 const bookingModel_1 = __importDefault(require("../model/bookingModel"));
@@ -206,68 +206,61 @@ exports.bookmarkRentalHomes = bookmarkRentalHomes;
 const roomRecommendation = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.params.userId;
     try {
-        // Retrieve the user's booking history
+        // Retrieve the user's bookings
         const userBookings = yield bookingModel_1.default.find({ userId });
         // Extract property IDs from the user's bookings
         const userPropertyIds = userBookings.map((booking) => booking.place);
-        // Find other users who have booked the same properties
-        const usersWithSimilarBookings = yield bookingModel_1.default.distinct("userId", {
-            place: { $in: userPropertyIds },
-        });
-        // Exclude the current user
-        const otherUsers = usersWithSimilarBookings.filter((id) => id.toString() !== userId);
-        // Retrieve bookings of other users
-        const otherUsersBookings = yield bookingModel_1.default.find({
-            userId: { $in: otherUsers },
-        });
-        // Extract property IDs from other users' bookings
-        const otherUsersPropertyIds = otherUsersBookings.map((booking) => booking.place);
-        // Get rental recommendations based on what other users are booking
+        // Find users who have booked similar properties
+        const similarUsers = yield bookingModel_1.default
+            .find({ place: { $in: userPropertyIds }, userId: { $ne: userId } })
+            .distinct("userId");
+        // Extract property IDs from similar users' bookings
+        const similarUserPropertyIds = yield bookingModel_1.default
+            .find({ userId: { $in: similarUsers } })
+            .distinct("place");
+        // Get rental recommendations based on what similar users are booking
         const recommendations = yield rentalModel_1.default.aggregate([
             {
                 $match: {
-                    _id: { $nin: [...userPropertyIds, ...otherUsersPropertyIds] },
+                    _id: { $nin: [...userPropertyIds, ...similarUserPropertyIds] },
                 },
             },
-            { $sample: { size: 3 } }, // Select 5 random rentals
+            { $sample: { size: 2 } }, // Select 5 random rentals
         ]);
         res.json(recommendations);
     }
     catch (error) {
-        res
-            .status(500)
-            .json({ error: "Error generating user-based recommendations" });
+        res.status(500).json({
+            error: "Error generating collaborative filtering recommendations",
+        });
     }
 });
 exports.roomRecommendation = roomRecommendation;
 // Update existing rental home
-const updateRentalHomes = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _d;
-    try {
-        const { id } = req.params;
-        const { title, description, address, perks, price, maxGuest } = req.body;
-        const photo = (_d = req.file) === null || _d === void 0 ? void 0 : _d.path;
-        // const cloudUpload = await cloudinary.upload(photo);
-        const hotel = {
-            title,
-            description,
-            address,
-            perks,
-            price,
-            maxGuest,
-        };
-        // if (req.file?.path) {
-        //   hotel.photos : photo.,
-        // }
-        const updateHome = yield rentalModel_1.default.findByIdAndUpdate(id, { $set: hotel }, { new: true });
-        res.status(200).json(updateHome);
-    }
-    catch (err) {
-        res.status(500).json(err.message);
-    }
-});
-exports.updateRentalHomes = updateRentalHomes;
-// Delete existing rental home
-// export const deleteRentalHomes = async (req: Request, res: Response) =>
-//   {
-//  }
+// export const updateRentalHomes = async (req: Request, res: Response) => {
+//   try {
+//     const { id } = req.params;
+//     const { title, description, address, perks, price, maxGuest } = req.body;
+//     const photo: any = req.file?.path;
+//     // const cloudUpload = await cloudinary.upload(photo);
+//     const hotel = {
+//       title,
+//       description,
+//       address,
+//       perks,
+//       price,
+//       maxGuest,
+//     };
+//     // if (req.file?.path) {
+//     //   hotel.photos : photo.,
+//     // }
+//     const updateHome = await rentals.findByIdAndUpdate(
+//       id,
+//       { $set: hotel },
+//       { new: true },
+//     );
+//     res.status(200).json(updateHome);
+//   } catch (err: any) {
+//     res.status(500).json(err.message);
+//   }
+// };

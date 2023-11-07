@@ -213,82 +213,66 @@ export const roomRecommendation = async (req: Request, res: Response) => {
   const userId = req.params.userId;
 
   try {
-    // Retrieve the user's booking history
+    // Retrieve the user's bookings
     const userBookings = await bookings.find({ userId });
 
     // Extract property IDs from the user's bookings
     const userPropertyIds = userBookings.map((booking) => booking.place);
 
-    // Find other users who have booked the same properties
-    const usersWithSimilarBookings = await bookings.distinct("userId", {
-      place: { $in: userPropertyIds },
-    });
+    // Find users who have booked similar properties
+    const similarUsers = await bookings
+      .find({ place: { $in: userPropertyIds }, userId: { $ne: userId } })
+      .distinct("userId");
 
-    // Exclude the current user
-    const otherUsers = usersWithSimilarBookings.filter(
-      (id) => id.toString() !== userId,
-    );
+    // Extract property IDs from similar users' bookings
+    const similarUserPropertyIds = await bookings
+      .find({ userId: { $in: similarUsers } })
+      .distinct("place");
 
-    // Retrieve bookings of other users
-    const otherUsersBookings = await bookings.find({
-      userId: { $in: otherUsers },
-    });
-
-    // Extract property IDs from other users' bookings
-    const otherUsersPropertyIds = otherUsersBookings.map(
-      (booking) => booking.place,
-    );
-
-    // Get rental recommendations based on what other users are booking
+    // Get rental recommendations based on what similar users are booking
     const recommendations = await rentals.aggregate([
       {
         $match: {
-          _id: { $nin: [...userPropertyIds, ...otherUsersPropertyIds] },
+          _id: { $nin: [...userPropertyIds, ...similarUserPropertyIds] },
         },
       }, // Exclude already booked properties
-      { $sample: { size: 3 } }, // Select 5 random rentals
+      { $sample: { size: 2 } }, // Select 5 random rentals
     ]);
 
     res.json(recommendations);
   } catch (error) {
-    res
-      .status(500)
-      .json({ error: "Error generating user-based recommendations" });
+    res.status(500).json({
+      error: "Error generating collaborative filtering recommendations",
+    });
   }
 };
 
 // Update existing rental home
-export const updateRentalHomes = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const { title, description, address, perks, price, maxGuest } = req.body;
-    const photo: any = req.file?.path;
-    // const cloudUpload = await cloudinary.upload(photo);
+// export const updateRentalHomes = async (req: Request, res: Response) => {
+//   try {
+//     const { id } = req.params;
+//     const { title, description, address, perks, price, maxGuest } = req.body;
+//     const photo: any = req.file?.path;
+//     // const cloudUpload = await cloudinary.upload(photo);
 
-    const hotel = {
-      title,
-      description,
-      address,
-      perks,
-      price,
-      maxGuest,
-    };
-    // if (req.file?.path) {
-    //   hotel.photos : photo.,
-    // }
-    const updateHome = await rentals.findByIdAndUpdate(
-      id,
-      { $set: hotel },
-      { new: true },
-    );
-    res.status(200).json(updateHome);
-  } catch (err: any) {
-    res.status(500).json(err.message);
-  }
-};
-
-// Delete existing rental home
-// export const deleteRentalHomes = async (req: Request, res: Response) =>
-//   {
-
-//  }
+//     const hotel = {
+//       title,
+//       description,
+//       address,
+//       perks,
+//       price,
+//       maxGuest,
+//     };
+//     // if (req.file?.path) {
+//     //   hotel.photos : photo.,
+//     // }
+//     const updateHome = await rentals.findByIdAndUpdate(
+//       id,
+//       { $set: hotel },
+//       { new: true },
+//     );
+//     res.status(200).json(updateHome);
+//   } catch (err: any) {
+//     res.status(500).json(err.message);
+//   }
+// };
