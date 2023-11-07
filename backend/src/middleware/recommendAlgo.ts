@@ -1,26 +1,49 @@
-import users from "../model/usersModel";
-import bookings from "../model/bookingModel";
 import rentals from "../model/rentalModel";
-// Function to recommend products for a user
-export const recommendedHotels = async (userId: string) => {
-  // Find the user by ID
-  const user = await users.findById(userId).populate("bookmark");
+import bookings from "../model/bookingModel";
 
-  // Extract product IDs from the user's wishlist
-  const wishlistRooms: any = user?.bookmark.map((book) => book);
+// Function to get collaborative filtering recommendations for a user
+export async function getCollaborativeFilteringRecommendations(userId: any) {
+  try {
+    // Find the bookings made by the user
+    const userBookings = await bookings.find({ userId }).exec();
 
-  // Find orders for the user
-  const userBooking = await bookings.find({ user: userId });
+    // Extract the rental IDs from the user's bookings
+    const rentalIds = userBookings.map((booking) => booking.place);
 
-  // Extract product IDs from the user's orders
-  const orderedProductIds = userBooking.map((book) => book.place);
+    // Find rentals booked by users who booked the same rentals
+    const similarUserBookings = await bookings
+      .find({
+        place: { $in: rentalIds },
+        userId: { $ne: userId }, // Exclude the current user
+      })
+      .exec();
 
-  // Find products that other users have ordered and the user hasn't
-  const recommendHotel = await rentals
-    .find({
-      _id: { $nin: wishlistRooms.concat(orderedProductIds) },
-    })
-    .limit(10); // Limit to the top 10 recommendations
+    // Extract rental IDs from bookings of similar users
+    const similarRentalIds = similarUserBookings.map(
+      (booking) => booking.place,
+    );
 
-  return recommendHotel;
-};
+    // Find rentals that were booked by similar users but not by the current user
+    const recommendations = await rentals
+      .find({
+        _id: { $in: similarRentalIds, $nin: rentalIds }, // Exclude rentals booked by the current user
+        // Include rentals booked by similar users
+      })
+      .limit(5) // Limit the number of recommendations
+      .exec();
+
+    return recommendations;
+  } catch (error: any) {
+    console.error(error.message);
+  }
+}
+
+// Example usage: Get collaborative filtering recommendations for a specific user
+// const userIdToRecommendFor = "your-user-id";
+// getCollaborativeFilteringRecommendations(userIdToRecommendFor)
+//   .then((recommendations) => {
+//     console.log("Collaborative Filtering Recommendations:", recommendations);
+//   })
+//   .catch((error) => {
+//     console.error(error);
+//   });

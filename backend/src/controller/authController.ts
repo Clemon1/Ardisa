@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import users from "../model/usersModel";
 import bcrypt from "bcrypt";
 import { generateToken } from "../middleware/JWT";
-import { log } from "console";
 
 // Admin Registration
 export const adminRegister = async (req: Request, res: Response) => {
@@ -83,7 +82,7 @@ export const adminLogin = async (req: Request, res: Response) => {
 export const clientRegister = async (req: Request, res: Response) => {
   try {
     const { fullname, email } = req.body;
-    // checking for existing admin
+    // checking if the user is already registered
     const existingAdmin = await users.findOne({ email });
     if (existingAdmin) return res.status(401).json("User already exist");
     const salt = await bcrypt.genSalt(10);
@@ -110,7 +109,8 @@ export const clientLogin = async (req: Request, res: Response) => {
     if (!req.body.email || !req.body.password) {
       return res.status(400).json("Email or Password must not be empty");
     }
-    const checkUser = await users.findOne({ email: req.body.email }); // checking for existing user
+    // checking for existing user
+    const checkUser = await users.findOne({ email: req.body.email });
     if (!checkUser) {
       return res
         .status(401)
@@ -127,7 +127,6 @@ export const clientLogin = async (req: Request, res: Response) => {
     if (!checkPassword) {
       return res.status(401).json("Invalid Password");
     }
-
     const { password, ...info } = checkUser;
     const token = generateToken({
       user: checkUser.id,

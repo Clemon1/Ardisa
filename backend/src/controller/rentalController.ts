@@ -1,12 +1,15 @@
 import { Request, Response } from "express";
+import { Types } from "mongoose";
 import rentals from "../model/rentalModel";
 import users from "../model/usersModel";
-import { recommendedHotels } from "../middleware/recommendAlgo";
+import bookings from "../model/bookingModel";
+import { getCollaborativeFilteringRecommendations } from "../middleware/recommendAlgo";
 import cloudinary from "../middleware/cloudinary";
 // View all rental homes
 interface view {
   _doc: object;
 }
+// View all rooms
 export const viewHome = async (req: Request, res: Response) => {
   try {
     const { search } = req.query;
@@ -76,7 +79,7 @@ export const viewSingleHome = async (req: Request, res: Response) => {
 export const viewSuggestHome = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
-    const recommend = await recommendedHotels(userId);
+    const recommend = getCollaborativeFilteringRecommendations(userId);
     res.status(200).json(recommend);
   } catch (error: any) {
     res.status(500).json(error.message);
@@ -138,6 +141,119 @@ export const bookmarkRentalHomes = async (req: Request, res: Response) => {
     }
   } catch (err: any) {
     res.status(500).json(err.message);
+  }
+};
+
+// Room Recommendation
+// export const roomRecommendation = async (req: Request, res: Response) => {
+//   try {
+//     const { userId } = req.params;
+
+//     // Retrieve the user's bookmarked rooms and bookings
+//     const user = await users.findById(userId).populate("bookmark").exec();
+
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     const bookmarkedRoomIds = user.bookmark.map((room: any) =>
+//       room._id.toString(),
+//     );
+
+//     // Retrieve the user's booked rooms
+//     const userBookings = await bookings.find({ userId });
+//     const bookedRoomIds = userBookings.map((booking: any) =>
+//       booking.place.toString(),
+//     );
+
+//     // Filter out the rentals that are in the bookmark but not booked
+//     const recommendations = bookmarkedRoomIds.filter(
+//       (roomId: string) => !bookedRoomIds.includes(roomId),
+//     );
+
+//     if (recommendations.length === 0) {
+//       return res.json({ message: "No recommendations available" });
+//     }
+
+//     // Retrieve rental details for the recommended rooms
+//     const recommendedRoomDetails = await rentals.find({
+//       _id: { $in: recommendations },
+//     });
+
+//     // Process and format the rental details as needed
+//     const refreshedProducts = recommendedRoomDetails.map((newProduct: any) => {
+//       const ratingLength = newProduct.ratings.length;
+//       let averageRating = 0;
+//       if (ratingLength > 0) {
+//         const totalRating = newProduct.ratings.reduce(
+//           (rating: any, total: any) => rating + total,
+//           0,
+//         );
+//         averageRating = totalRating / ratingLength;
+//       }
+//       return {
+//         _id: newProduct._id,
+//         title: newProduct.title,
+//         description: newProduct.description,
+//         address: newProduct.address,
+//         ratings: averageRating,
+//         photos: newProduct.photos,
+//         perks: newProduct.perks,
+//         price: newProduct.price,
+//         maxGuest: newProduct.maxGuest,
+//       };
+//     });
+
+//     res.status(200).json(refreshedProducts);
+//   } catch (err: any) {
+//     res.status(500).json(err.message);
+//   }
+// };
+export const roomRecommendation = async (req: Request, res: Response) => {
+  const userId = req.params.userId;
+
+  try {
+    // Retrieve the user's booking history
+    const userBookings = await bookings.find({ userId });
+
+    // Extract property IDs from the user's bookings
+    const userPropertyIds = userBookings.map((booking) => booking.place);
+
+    // Find other users who have booked the same properties
+    const usersWithSimilarBookings = await bookings.distinct("userId", {
+      place: { $in: userPropertyIds },
+    });
+
+    // Exclude the current user
+    const otherUsers = usersWithSimilarBookings.filter(
+      (id) => id.toString() !== userId,
+    );
+
+    // Retrieve bookings of other users
+    const otherUsersBookings = await bookings.find({
+      userId: { $in: otherUsers },
+    });
+
+    // Extract property IDs from other users' bookings
+    const otherUsersPropertyIds = otherUsersBookings.map(
+      (booking) => booking.place,
+    );
+
+    // Get rental recommendations based on what other users are booking
+    const recommendations = await rentals.aggregate([
+      {
+        $match: {
+          _id: { $nin: [...userPropertyIds, ...otherUsersPropertyIds] },
+        },
+      }, // Exclude already booked properties
+      { $sample: { size: 3 } }, // Select 5 random rentals
+    ]);
+
+    res.json(recommendations);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: "Error generating user-based recommendations" });
   }
 };
 

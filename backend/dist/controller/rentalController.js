@@ -12,11 +12,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateRentalHomes = exports.bookmarkRentalHomes = exports.createRentalHomes = exports.viewSuggestHome = exports.viewSingleHome = exports.viewHome = void 0;
+exports.updateRentalHomes = exports.roomRecommendation = exports.bookmarkRentalHomes = exports.createRentalHomes = exports.viewSuggestHome = exports.viewSingleHome = exports.viewHome = void 0;
 const rentalModel_1 = __importDefault(require("../model/rentalModel"));
 const usersModel_1 = __importDefault(require("../model/usersModel"));
+const bookingModel_1 = __importDefault(require("../model/bookingModel"));
 const recommendAlgo_1 = require("../middleware/recommendAlgo");
 const cloudinary_1 = __importDefault(require("../middleware/cloudinary"));
+// View all rooms
 const viewHome = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { search } = req.query;
@@ -83,7 +85,7 @@ exports.viewSingleHome = viewSingleHome;
 const viewSuggestHome = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { userId } = req.params;
-        const recommend = yield (0, recommendAlgo_1.recommendedHotels)(userId);
+        const recommend = (0, recommendAlgo_1.getCollaborativeFilteringRecommendations)(userId);
         res.status(200).json(recommend);
     }
     catch (error) {
@@ -145,6 +147,99 @@ const bookmarkRentalHomes = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.bookmarkRentalHomes = bookmarkRentalHomes;
+// Room Recommendation
+// export const roomRecommendation = async (req: Request, res: Response) => {
+//   try {
+//     const { userId } = req.params;
+//     // Retrieve the user's bookmarked rooms and bookings
+//     const user = await users.findById(userId).populate("bookmark").exec();
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+//     const bookmarkedRoomIds = user.bookmark.map((room: any) =>
+//       room._id.toString(),
+//     );
+//     // Retrieve the user's booked rooms
+//     const userBookings = await bookings.find({ userId });
+//     const bookedRoomIds = userBookings.map((booking: any) =>
+//       booking.place.toString(),
+//     );
+//     // Filter out the rentals that are in the bookmark but not booked
+//     const recommendations = bookmarkedRoomIds.filter(
+//       (roomId: string) => !bookedRoomIds.includes(roomId),
+//     );
+//     if (recommendations.length === 0) {
+//       return res.json({ message: "No recommendations available" });
+//     }
+//     // Retrieve rental details for the recommended rooms
+//     const recommendedRoomDetails = await rentals.find({
+//       _id: { $in: recommendations },
+//     });
+//     // Process and format the rental details as needed
+//     const refreshedProducts = recommendedRoomDetails.map((newProduct: any) => {
+//       const ratingLength = newProduct.ratings.length;
+//       let averageRating = 0;
+//       if (ratingLength > 0) {
+//         const totalRating = newProduct.ratings.reduce(
+//           (rating: any, total: any) => rating + total,
+//           0,
+//         );
+//         averageRating = totalRating / ratingLength;
+//       }
+//       return {
+//         _id: newProduct._id,
+//         title: newProduct.title,
+//         description: newProduct.description,
+//         address: newProduct.address,
+//         ratings: averageRating,
+//         photos: newProduct.photos,
+//         perks: newProduct.perks,
+//         price: newProduct.price,
+//         maxGuest: newProduct.maxGuest,
+//       };
+//     });
+//     res.status(200).json(refreshedProducts);
+//   } catch (err: any) {
+//     res.status(500).json(err.message);
+//   }
+// };
+const roomRecommendation = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.params.userId;
+    try {
+        // Retrieve the user's booking history
+        const userBookings = yield bookingModel_1.default.find({ userId });
+        // Extract property IDs from the user's bookings
+        const userPropertyIds = userBookings.map((booking) => booking.place);
+        // Find other users who have booked the same properties
+        const usersWithSimilarBookings = yield bookingModel_1.default.distinct("userId", {
+            place: { $in: userPropertyIds },
+        });
+        // Exclude the current user
+        const otherUsers = usersWithSimilarBookings.filter((id) => id.toString() !== userId);
+        // Retrieve bookings of other users
+        const otherUsersBookings = yield bookingModel_1.default.find({
+            userId: { $in: otherUsers },
+        });
+        // Extract property IDs from other users' bookings
+        const otherUsersPropertyIds = otherUsersBookings.map((booking) => booking.place);
+        // Get rental recommendations based on what other users are booking
+        const recommendations = yield rentalModel_1.default.aggregate([
+            {
+                $match: {
+                    _id: { $nin: [...userPropertyIds, ...otherUsersPropertyIds] },
+                },
+            },
+            { $sample: { size: 3 } }, // Select 5 random rentals
+        ]);
+        res.json(recommendations);
+    }
+    catch (error) {
+        res
+            .status(500)
+            .json({ error: "Error generating user-based recommendations" });
+    }
+});
+exports.roomRecommendation = roomRecommendation;
 // Update existing rental home
 const updateRentalHomes = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _d;

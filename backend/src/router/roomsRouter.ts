@@ -4,11 +4,13 @@ import {
   viewSingleHome,
   viewSuggestHome,
   createRentalHomes,
+  roomRecommendation,
+  bookmarkRentalHomes,
 } from "../controller/rentalController";
 import multer from "multer";
 
 import path from "path";
-import { getRecommendations } from "../controller/recommendation";
+// import { getRecommendations } from "../controller/recommendation";
 const router = Router();
 
 const storage = multer.diskStorage({
@@ -22,23 +24,24 @@ const upload = multer({
 });
 router.get("/viewrooms", viewHome);
 router.get("/viewrooms/:id", viewSingleHome);
-router.get("/recommendations/:userId", async (req: Request, res: Response) => {
-  const userId: any = req.params.userId;
-  const numRecommendations = 5;
+// router.get("/recommendations/:userId", async (req: Request, res: Response) => {
+//   const userId: any = req.params.userId;
+//   const numRecommendations = 5;
 
-  try {
-    const recommendations = await getRecommendations(
-      userId,
-      numRecommendations,
-    );
-    res.json(recommendations);
-  } catch (error) {
-    res.status(500).json({ error: "Error fetching recommendations" });
-  }
-});
+//   try {
+//     const recommendations = await getRecommendations(
+//       userId,
+//       numRecommendations,
+//     );
+//     res.json(recommendations);
+//   } catch (error) {
+//     res.status(500).json({ error: "Error fetching recommendations" });
+//   }
+// });
+router.get("/recommendations/:userId", roomRecommendation);
 router.get("/suggest/:userId", viewSuggestHome);
 router.post("/createRoom", upload.single("photos"), createRentalHomes);
-router.patch("/wishlist/:userId/:productId");
-router.patch("/viewrooms/:id");
+router.patch("/wishlist/:id/:productId", bookmarkRentalHomes);
+// router.patch("/viewrooms/:id");
 
 export default router;

@@ -23,7 +23,12 @@ const userSchema = new mongoose_1.Schema({
     },
     phoneNumber: String,
     avartar: String,
-    bookmark: [],
+    bookmark: [
+        {
+            type: mongoose_1.Schema.Types.ObjectId,
+            ref: "rentals",
+        },
+    ],
     role: {
         type: String,
         enum: ["admin", "hostelOwner", "user"],

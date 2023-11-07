@@ -3,7 +3,6 @@ import bookings from "../model/bookingModel";
 import users from "../model/usersModel";
 
 // View all bookings
-
 export const viewAllBookings = async (req: Request, res: Response) => {
   try {
     const allBookings = await bookings.find();
@@ -12,7 +11,6 @@ export const viewAllBookings = async (req: Request, res: Response) => {
     res.status(500).json(err.message);
   }
 };
-
 //View user bookings
 export const viewUserBookings = async (req: Request, res: Response) => {
   try {

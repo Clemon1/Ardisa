@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { Schema, model, Types } from "mongoose";
 
 interface IUser {
   fullname: string;
@@ -7,7 +7,7 @@ interface IUser {
   password: string;
   phoneNumber: string;
   isDeleted: boolean;
-  bookmark: Array<string | number>;
+  bookmark: [Types.ObjectId];
   role: string;
 }
 
@@ -35,7 +35,12 @@ const userSchema = new Schema<IUser>(
 
     phoneNumber: String,
     avartar: String,
-    bookmark: [],
+    bookmark: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "rentals",
+      },
+    ],
     role: {
       type: String,
       enum: ["admin", "hostelOwner", "user"],

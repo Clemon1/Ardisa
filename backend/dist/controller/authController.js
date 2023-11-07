@@ -98,7 +98,7 @@ exports.adminLogin = adminLogin;
 const clientRegister = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { fullname, email } = req.body;
-        // checking for existing admin
+        // checking if the user is already registered
         const existingAdmin = yield usersModel_1.default.findOne({ email });
         if (existingAdmin)
             return res.status(401).json("User already exist");
@@ -125,7 +125,8 @@ const clientLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         if (!req.body.email || !req.body.password) {
             return res.status(400).json("Email or Password must not be empty");
         }
-        const checkUser = yield usersModel_1.default.findOne({ email: req.body.email }); // checking for existing user
+        // checking for existing user
+        const checkUser = yield usersModel_1.default.findOne({ email: req.body.email });
         if (!checkUser) {
             return res
                 .status(401)
