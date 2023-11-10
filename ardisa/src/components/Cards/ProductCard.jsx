@@ -11,7 +11,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { OurImage } from "../ImageOptimizer";
-import WishListBtn from "./WishlistButton";
+
 import { AiFillHeart, AiFillStar, AiOutlineHeart } from "react-icons/ai";
 import Link from "next/link";
 
@@ -31,13 +31,13 @@ const ProductCard = ({
     <Card
       flex={" 1 1 1"}
       width={["48%", "48%", "31%", "28%", "24%"]}
-      height={"38%"}
+      height={"60vh"}
       bg={bg}
       color={color}
       transition={"0.6s ease-in"}
       rounded={24}
       position={"relative"}>
-      <WishListBtn
+      {/* <WishListBtn
         onClick={clickFavour}
         position={"absolute"}
         top={"15px"}
@@ -53,7 +53,7 @@ const ProductCard = ({
             />
           )
         }
-      />
+      /> */}
       <Image
         src={photo}
         rounded={24}

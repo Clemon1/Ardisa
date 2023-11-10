@@ -210,40 +210,51 @@ export const bookmarkRentalHomes = async (req: Request, res: Response) => {
 //   }
 // };
 export const roomRecommendation = async (req: Request, res: Response) => {
-  const userId = req.params.userId;
-
   try {
-    // Retrieve the user's bookings
-    const userBookings = await bookings.find({ userId });
+    const userId = req.params.userId;
 
-    // Extract property IDs from the user's bookings
-    const userPropertyIds = userBookings.map((booking) => booking.place);
+    // Get user's bookmarked rentals
+    const user = await users.findById(userId).populate("bookmark");
 
-    // Find users who have booked similar properties
-    const similarUsers = await bookings
-      .find({ place: { $in: userPropertyIds }, userId: { $ne: userId } })
-      .distinct("userId");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-    // Extract property IDs from similar users' bookings
-    const similarUserPropertyIds = await bookings
-      .find({ userId: { $in: similarUsers } })
-      .distinct("place");
+    const userBookmarks = user.bookmark.map((bookmark) => bookmark._id);
 
-    // Get rental recommendations based on what similar users are booking
-    const recommendations = await rentals.aggregate([
-      {
-        $match: {
-          _id: { $nin: [...userPropertyIds, ...similarUserPropertyIds] },
-        },
-      }, // Exclude already booked properties
-      { $sample: { size: 2 } }, // Select 5 random rentals
-    ]);
-
-    res.json(recommendations);
-  } catch (error) {
-    res.status(500).json({
-      error: "Error generating collaborative filtering recommendations",
+    // Find users who have bookmarked similar rentals
+    const similarUsersByBookmarks = await users.find({
+      bookmark: { $in: userBookmarks },
+      _id: { $ne: userId },
     });
+
+    // Find users who have similar bookings
+    const userBookings = await bookings.find({ userId });
+    const similarUsersByBookings = await users.find({
+      _id: { $ne: userId },
+      bookmark: { $in: userBookings.map((booking) => booking.place) },
+    });
+
+    // Get rental recommendations from both similar bookmarks and similar bookings
+    const recommendedRentals = await rentals.find({
+      _id: {
+        $in: [
+          ...similarUsersByBookmarks.flatMap((user) => user.bookmark),
+          ...similarUsersByBookings.flatMap((user) => user.bookmark),
+        ],
+      },
+    });
+
+    // Filter out rentals that the user has already booked or bookmarked
+    const filteredRecommendations = recommendedRentals.filter(
+      (rental) =>
+        !userBookmarks.includes(rental._id) &&
+        !userBookings.some((booking) => booking.place.equals(rental._id)),
+    );
+
+    res.status(200).json(filteredRecommendations);
+  } catch (error) {
+    res.status(500).json({ error: "Could not fetch recommendations." });
   }
 };
 

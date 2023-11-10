@@ -13,7 +13,8 @@ import { ArdisaFetch } from "@/components/Middleware/AxiosInstance";
 import { useSearchParams } from "next/navigation";
 
 export default function page() {
-  const user = useAuthStore((state) => state.Users);
+  const { Users, isAuthenticated } = useAuthStore();
+
   const searchParams = useSearchParams();
   let location = "";
 
@@ -23,9 +24,21 @@ export default function page() {
     );
     return res.data;
   };
+
+  const userId = isAuthenticated ? Users.other._id : null;
+  const recommendData = async () => {
+    const res = await ArdisaFetch.get(`/v1/rentals/recommendations/${userId}`);
+    console.log(res.data);
+    return res.data;
+  };
+
   const { isLoading, data, isError } = useQuery({
     queryKey: ["hotels", location],
     queryFn: searchData,
+  });
+  const { data: recommend } = useQuery({
+    queryKey: ["recommend"],
+    queryFn: recommendData,
   });
 
   const [favorites, setFavourites] = useState("");
@@ -50,6 +63,7 @@ export default function page() {
           width={"full"}
           height={"200vh"}
           px={[2, 2, 10, 90, 100]}
+          py={2}
           bg={!darkMode ? "#DEF5F4" : "gray.800"}
           transition={"0.6s ease-in"}
           position={"relative"}>
@@ -62,8 +76,7 @@ export default function page() {
           <Flex
             flexWrap={"wrap"}
             width={"full"}
-            height={"88%"}
-            alignContent={"flex-start"}
+            height={"100vh"}
             gap={"15px"}
             top={"130px"}
             position={"relative"}>
@@ -76,8 +89,6 @@ export default function page() {
                   title={product.title}
                   price={product.price}
                   color={!darkMode ? "gray.800" : "#F9F8FF"}
-                  clickFavour={clickFavorites}
-                  favour={""} // Check if the product is in favorites
                   rating={product.ratings}
                   address={product.address}
                   link={product._id}
@@ -85,10 +96,44 @@ export default function page() {
               ))
             ) : (
               <Box width={"100%"} height={"100vh"}>
-                {isLoading && <>...Loading</>}{" "}
+                {isLoading && <>...Loading</>}
               </Box>
             )}
           </Flex>
+          <Box width={"100%"}>
+            <Box>
+              <Text fontSize={24} fontWeight={500}>
+                System Recommendation
+              </Text>
+            </Box>
+            <Flex
+              width={"100%"}
+              height={"100%"}
+              justifyContent={"flex-start"}
+              gap={2}
+              top={"130px"}
+              position={"relative"}>
+              {recommend.length > 0 ? (
+                recommend.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    photo={product.photos}
+                    bg={!darkMode ? "#F9F8FF" : "#0c131d"}
+                    title={product.title}
+                    price={product.price}
+                    color={!darkMode ? "gray.800" : "#F9F8FF"}
+                    rating={product.ratings}
+                    address={product.address}
+                    link={product._id}
+                  />
+                ))
+              ) : (
+                <>
+                  <Text>No recommendation found</Text>
+                </>
+              )}
+            </Flex>
+          </Box>
         </Box>
       </div>
     </RouteProctector>

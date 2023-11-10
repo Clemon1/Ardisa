@@ -204,35 +204,41 @@ exports.bookmarkRentalHomes = bookmarkRentalHomes;
 //   }
 // };
 const roomRecommendation = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const userId = req.params.userId;
     try {
-        // Retrieve the user's bookings
+        const userId = req.params.userId;
+        // Get user's bookmarked rentals
+        const user = yield usersModel_1.default.findById(userId).populate("bookmark");
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        const userBookmarks = user.bookmark.map((bookmark) => bookmark._id);
+        // Find users who have bookmarked similar rentals
+        const similarUsersByBookmarks = yield usersModel_1.default.find({
+            bookmark: { $in: userBookmarks },
+            _id: { $ne: userId },
+        });
+        // Find users who have similar bookings
         const userBookings = yield bookingModel_1.default.find({ userId });
-        // Extract property IDs from the user's bookings
-        const userPropertyIds = userBookings.map((booking) => booking.place);
-        // Find users who have booked similar properties
-        const similarUsers = yield bookingModel_1.default
-            .find({ place: { $in: userPropertyIds }, userId: { $ne: userId } })
-            .distinct("userId");
-        // Extract property IDs from similar users' bookings
-        const similarUserPropertyIds = yield bookingModel_1.default
-            .find({ userId: { $in: similarUsers } })
-            .distinct("place");
-        // Get rental recommendations based on what similar users are booking
-        const recommendations = yield rentalModel_1.default.aggregate([
-            {
-                $match: {
-                    _id: { $nin: [...userPropertyIds, ...similarUserPropertyIds] },
-                },
+        const similarUsersByBookings = yield usersModel_1.default.find({
+            _id: { $ne: userId },
+            bookmark: { $in: userBookings.map((booking) => booking.place) },
+        });
+        // Get rental recommendations from both similar bookmarks and similar bookings
+        const recommendedRentals = yield rentalModel_1.default.find({
+            _id: {
+                $in: [
+                    ...similarUsersByBookmarks.flatMap((user) => user.bookmark),
+                    ...similarUsersByBookings.flatMap((user) => user.bookmark),
+                ],
             },
-            { $sample: { size: 2 } }, // Select 5 random rentals
-        ]);
-        res.json(recommendations);
+        });
+        // Filter out rentals that the user has already booked or bookmarked
+        const filteredRecommendations = recommendedRentals.filter((rental) => !userBookmarks.includes(rental._id) &&
+            !userBookings.some((booking) => booking.place.equals(rental._id)));
+        res.status(200).json(filteredRecommendations);
     }
     catch (error) {
-        res.status(500).json({
-            error: "Error generating collaborative filtering recommendations",
-        });
+        res.status(500).json({ error: "Could not fetch recommendations." });
     }
 });
 exports.roomRecommendation = roomRecommendation;
