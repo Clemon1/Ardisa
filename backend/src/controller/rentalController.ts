@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, Response, response } from "express";
 import { Types } from "mongoose";
 import rentals from "../model/rentalModel";
 import users from "../model/usersModel";
@@ -251,6 +251,9 @@ export const roomRecommendation = async (req: Request, res: Response) => {
         !userBookmarks.includes(rental._id) &&
         !userBookings.some((booking) => booking.place.equals(rental._id)),
     );
+    if (!filteredRecommendations) {
+      return res.status(200).json("No recommendations found");
+    }
 
     res.status(200).json(filteredRecommendations);
   } catch (error) {
@@ -258,6 +261,20 @@ export const roomRecommendation = async (req: Request, res: Response) => {
   }
 };
 
+export const searchRentals = async (req: Request, res: Response) => {
+  try {
+    const { search } = req.query;
+    const homes = await rentals.find({
+      $or: [
+        { title: { $regex: search, $options: "i" } },
+        { address: { $regex: search, $options: "i" } },
+      ],
+    });
+    res.status(200).json(homes);
+  } catch (err: any) {
+    res.status(500).json(err.message);
+  }
+};
 // Update existing rental home
 // export const updateRentalHomes = async (req: Request, res: Response) => {
 //   try {

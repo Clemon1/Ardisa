@@ -5,11 +5,17 @@ import Img1 from "../assets/imag11.jpg";
 import Search from "@/components/search/search";
 import { OurImage } from "@/components/ImageOptimizer";
 import { useDarkMode } from "@/Store/darkModeStore";
-import { useLayoutEffect } from "react";
+import { useLayoutEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 const Home = () => {
   const darkMode = useDarkMode((state) => state.darkMode);
-
+  const [location, setLocation] = useState("");
+  const router = useRouter();
+  const hanSearch = (e) => {
+    e.preventDefault();
+    router.push(`/hotels/search/${location}`);
+  };
   return (
     <div>
       <Box
@@ -55,7 +61,12 @@ const Home = () => {
               Enjoy Your Time!
             </Text>
           </Flex>
-          <Search top={"27.4rem"} height={"17%"} />
+          <Search
+            top={"27.4rem"}
+            height={"17%"}
+            handleLocation={(e) => setLocation(e.target.value)}
+            handleSearch={hanSearch}
+          />
 
           <OurImage
             src={Img1}

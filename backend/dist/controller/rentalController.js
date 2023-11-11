@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.roomRecommendation = exports.bookmarkRentalHomes = exports.createRentalHomes = exports.viewSuggestHome = exports.viewSingleHome = exports.viewHome = void 0;
+exports.searchRentals = exports.roomRecommendation = exports.bookmarkRentalHomes = exports.createRentalHomes = exports.viewSuggestHome = exports.viewSingleHome = exports.viewHome = void 0;
 const rentalModel_1 = __importDefault(require("../model/rentalModel"));
 const usersModel_1 = __importDefault(require("../model/usersModel"));
 const bookingModel_1 = __importDefault(require("../model/bookingModel"));
@@ -235,6 +235,9 @@ const roomRecommendation = (req, res) => __awaiter(void 0, void 0, void 0, funct
         // Filter out rentals that the user has already booked or bookmarked
         const filteredRecommendations = recommendedRentals.filter((rental) => !userBookmarks.includes(rental._id) &&
             !userBookings.some((booking) => booking.place.equals(rental._id)));
+        if (!filteredRecommendations) {
+            return res.status(200).json("No recommendations found");
+        }
         res.status(200).json(filteredRecommendations);
     }
     catch (error) {
@@ -242,6 +245,22 @@ const roomRecommendation = (req, res) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.roomRecommendation = roomRecommendation;
+const searchRentals = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { search } = req.query;
+        const homes = yield rentalModel_1.default.find({
+            $or: [
+                { title: { $regex: search, $options: "i" } },
+                { address: { $regex: search, $options: "i" } },
+            ],
+        });
+        res.status(200).json(homes);
+    }
+    catch (err) {
+        res.status(500).json(err.message);
+    }
+});
+exports.searchRentals = searchRentals;
 // Update existing rental home
 // export const updateRentalHomes = async (req: Request, res: Response) => {
 //   try {

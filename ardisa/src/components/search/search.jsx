@@ -12,10 +12,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { AiOutlineSearch } from "react-icons/ai";
 
-const Search = ({ top, height, handleLocation, filter }) => {
-  const handleSearch = (e) => {
-    e.preventDefault();
-  };
+const Search = ({ top, height, handleLocation, handleSearch, filter }) => {
   return (
     <Flex
       width={["full", "80%", "80%", "86%", "85%"]}
@@ -38,7 +35,7 @@ const Search = ({ top, height, handleLocation, filter }) => {
           type='text'
           placeholder='Search destination'
           rounded={14}
-          onChange={(e) => handleLocation(e.target.value)}
+          onChange={handleLocation}
         />
       </FormControl>
       <Divider orientation='vertical' />

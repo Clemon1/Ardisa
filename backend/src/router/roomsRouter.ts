@@ -6,6 +6,7 @@ import {
   createRentalHomes,
   roomRecommendation,
   bookmarkRentalHomes,
+  searchRentals,
 } from "../controller/rentalController";
 import multer from "multer";
 
@@ -39,6 +40,7 @@ router.get("/viewrooms/:id", viewSingleHome);
 //   }
 // });
 router.get("/recommendations/:userId", roomRecommendation);
+router.get("/search", searchRentals);
 router.get("/suggest/:userId", viewSuggestHome);
 router.post("/createRoom", upload.single("photos"), createRentalHomes);
 router.patch("/wishlist/:id/:productId", bookmarkRentalHomes);

@@ -10,17 +10,22 @@ import { useDarkMode } from "@/Store/darkModeStore";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/Store/authStore";
 import { ArdisaFetch } from "@/components/Middleware/AxiosInstance";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 
 export default function page() {
   const { Users, isAuthenticated } = useAuthStore();
 
   const searchParams = useSearchParams();
-  let location = "";
-
-  const searchData = async (location) => {
+  const [location, setLocation] = useState("");
+  const [locate, setLocate] = useState("");
+  const router = useRouter();
+  const hanSearch = (e) => {
+    e.preventDefault();
+    router.push(`/hotels/search/${location}`);
+  };
+  const searchData = async (locate) => {
     const res = await ArdisaFetch.get(
-      `/v1/rentals/viewrooms/?search=${location}`,
+      `/v1/rentals/viewrooms/?search=${locate}`,
     );
     return res.data;
   };
@@ -33,7 +38,7 @@ export default function page() {
   };
 
   const { isLoading, data, isError } = useQuery({
-    queryKey: ["hotels", location],
+    queryKey: ["hotels", locate],
     queryFn: searchData,
   });
   const { data: recommend } = useQuery({
@@ -70,7 +75,8 @@ export default function page() {
           <Search
             top={0}
             height={"8%"}
-            handleLocation={(value) => setLocation(value)}
+            handleLocation={(e) => setLocation(e.target.value)}
+            handleSearch={hanSearch}
           />
 
           <Flex
@@ -113,7 +119,7 @@ export default function page() {
               gap={2}
               top={"130px"}
               position={"relative"}>
-              {recommend.length > 0 ? (
+              {recommend && recommend.length > 0 ? (
                 recommend.map((product) => (
                   <ProductCard
                     key={product.id}

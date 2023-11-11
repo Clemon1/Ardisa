@@ -33,6 +33,7 @@ router.get("/viewrooms/:id", rentalController_1.viewSingleHome);
 //   }
 // });
 router.get("/recommendations/:userId", rentalController_1.roomRecommendation);
+router.get("/search", rentalController_1.searchRentals);
 router.get("/suggest/:userId", rentalController_1.viewSuggestHome);
 router.post("/createRoom", upload.single("photos"), rentalController_1.createRentalHomes);
 router.patch("/wishlist/:id/:productId", rentalController_1.bookmarkRentalHomes);
