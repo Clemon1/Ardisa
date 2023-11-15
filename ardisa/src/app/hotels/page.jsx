@@ -86,7 +86,7 @@ export default function page() {
             gap={"15px"}
             top={"130px"}
             position={"relative"}>
-            {data.length > 0 ? (
+            {data && data.length > 0 ? (
               data.map((product) => (
                 <ProductCard
                   key={product.id}

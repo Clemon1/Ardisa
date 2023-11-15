@@ -12,6 +12,10 @@ const bookingSchema = new mongoose_1.Schema({
         ref: "rentals",
         required: true,
     },
+    email: {
+        type: String,
+        required: true,
+    },
     price: {
         type: Number,
         required: true,

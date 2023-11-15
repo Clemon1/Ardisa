@@ -5,7 +5,6 @@ import { Request, Response, NextFunction } from "express";
 
 dotenv.config();
 const secretKey = process.env.JWT_SECRET;
-console.log(secretKey);
 
 // Define interfaces for user and role
 interface User {

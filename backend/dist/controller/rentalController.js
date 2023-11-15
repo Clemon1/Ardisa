@@ -254,7 +254,27 @@ const searchRentals = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 { address: { $regex: search, $options: "i" } },
             ],
         });
-        res.status(200).json(homes);
+        const newRentals = homes.map((home) => {
+            var _a, _b;
+            const averageRatingLenght = (_a = home.ratings) === null || _a === void 0 ? void 0 : _a.length;
+            let averageRating = 0;
+            if (averageRating > 0) {
+                const totalRating = (_b = home.ratings) === null || _b === void 0 ? void 0 : _b.reduce((acc, rating) => acc + rating, 0);
+                averageRating = totalRating / averageRatingLenght;
+            }
+            return {
+                _id: home._id,
+                title: home.title,
+                description: home.description,
+                address: home.address,
+                ratings: averageRating,
+                photos: home.photos,
+                perks: home.perks,
+                price: home.price,
+                maxGuest: home.maxGuest,
+            };
+        });
+        res.status(200).json(newRentals);
     }
     catch (err) {
         res.status(500).json(err.message);

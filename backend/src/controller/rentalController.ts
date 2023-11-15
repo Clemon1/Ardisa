@@ -270,7 +270,30 @@ export const searchRentals = async (req: Request, res: Response) => {
         { address: { $regex: search, $options: "i" } },
       ],
     });
-    res.status(200).json(homes);
+    const newRentals = homes.map((home) => {
+      const averageRatingLenght: any = home.ratings?.length;
+      let averageRating: number = 0;
+
+      if (averageRating > 0) {
+        const totalRating: any = home.ratings?.reduce(
+          (acc, rating) => acc + rating,
+          0,
+        );
+        averageRating = totalRating / averageRatingLenght;
+      }
+      return {
+        _id: home._id,
+        title: home.title,
+        description: home.description,
+        address: home.address,
+        ratings: averageRating,
+        photos: home.photos,
+        perks: home.perks,
+        price: home.price,
+        maxGuest: home.maxGuest,
+      };
+    });
+    res.status(200).json(newRentals);
   } catch (err: any) {
     res.status(500).json(err.message);
   }

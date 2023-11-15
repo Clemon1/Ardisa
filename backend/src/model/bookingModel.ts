@@ -4,6 +4,7 @@ interface IbookingService {
   userId: Types.ObjectId;
   place: Types.ObjectId;
   price: number;
+  email: string;
   checkIN: Date;
   checkOUT: Date;
   numOfGuest: number;
@@ -20,6 +21,10 @@ const bookingSchema = new Schema<IbookingService>(
     place: {
       type: Schema.Types.ObjectId,
       ref: "rentals",
+      required: true,
+    },
+    email: {
+      type: String,
       required: true,
     },
     price: {

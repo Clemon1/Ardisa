@@ -31,7 +31,6 @@ const dotenv = __importStar(require("dotenv"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 dotenv.config();
 const secretKey = process.env.JWT_SECRET;
-console.log(secretKey);
 if (!secretKey) {
     throw new Error("JWT_SECRET not defined in environment variables");
 }
