@@ -123,9 +123,9 @@ export default function page() {
                 recommend.map((product) => (
                   <ProductCard
                     key={product.id}
-                    photo={product.photos}
+                    photo={product.place.photos}
                     bg={!darkMode ? "#F9F8FF" : "#0c131d"}
-                    title={product.title}
+                    title={product.place.title}
                     price={product.price}
                     color={!darkMode ? "gray.800" : "#F9F8FF"}
                     rating={product.ratings}

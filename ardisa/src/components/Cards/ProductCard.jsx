@@ -96,7 +96,7 @@ const ProductCard = ({
           </Flex>
           <Flex width={"full"} gap={1}>
             <Text fontSize={17} fontWeight={600}>
-              <>$</>
+              <>£</>
               {price}
             </Text>
             <Text fontSize={16} fontWeight={400}>

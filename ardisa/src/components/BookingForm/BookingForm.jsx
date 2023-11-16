@@ -35,7 +35,7 @@ function BookingForm({
         alignItems={"center"}>
         <Flex>
           <Text fontSize={24} fontWeight={500}>
-            ${price}
+            £{price}
           </Text>
           <Text alignSelf={"center"} fontSize={16} fontWeight={400}>
             /nights

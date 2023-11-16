@@ -73,7 +73,7 @@ function Bookings() {
               data.map((data) => (
                 <Tr>
                   <Td>{data.place.title}</Td>
-                  <Td>${data.price}</Td>
+                  <Td>£{data.price}</Td>
                   <Td>
                     {formatDistance(
                       new Date(data.checkIN),
