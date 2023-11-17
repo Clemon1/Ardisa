@@ -41,10 +41,10 @@ function BookingForm({
             /nights
           </Text>
         </Flex>
-        <Flex alignItems={"center"}>
+        {/* <Flex alignItems={"center"}>
           <Icon as={AiFillStar} fontSize={20} />
           <Text fontWeight={500}>{rating}</Text>
-        </Flex>
+        </Flex> */}
       </Flex>
       <form onSubmit={handleSubmit}>
         <Flex width={"full"} gap={1} mb={2}>

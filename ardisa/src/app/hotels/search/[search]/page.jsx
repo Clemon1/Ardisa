@@ -33,7 +33,7 @@ function SearchPage({ params }) {
               title={product.title}
               price={product.price}
               // color={!darkMode ? "gray.800" : "#F9F8FF"}
-              rating={product.ratings}
+
               address={product.address}
               link={product._id}
             />

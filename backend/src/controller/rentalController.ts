@@ -289,7 +289,7 @@ export const roomRecommendation = async (
       })
       .populate("place")
       .limit(2)
-      .sort("created_at DESC")
+      .sort({ createdAt: -1 })
       .exec();
     res.status(200).json(recommendedRentals);
   } catch (error: any) {

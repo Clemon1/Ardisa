@@ -103,9 +103,9 @@ const Navbar = () => {
                   <Link href={"/bookings"} _hover={{ textDecoration: "none" }}>
                     <MenuItem fontWeight={500}>Booking History</MenuItem>
                   </Link>
-                  <MenuItem fontWeight={500}>Wishlist</MenuItem>
+                  {/* <MenuItem fontWeight={500}>Wishlist</MenuItem>
                   <MenuItem fontWeight={500}>Notifications</MenuItem>
-                  <MenuItem fontWeight={500}>Contact</MenuItem>
+                  <MenuItem fontWeight={500}>Contact</MenuItem> */}
                   <Divider />
                   <Link href={"/profile"} _hover={{ textDecoration: "none" }}>
                     <MenuItem fontWeight={500}>Profile</MenuItem>

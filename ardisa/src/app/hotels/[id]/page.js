@@ -141,7 +141,6 @@ function SingleHotel({ params }) {
                 <BookingForm
                   handleSubmit={handleBooking}
                   price={data.singleHome.price || "Price not Available"}
-                  rating={data.rating}
                   handleCheckIn={(e) => setCheckIN(e.target.value)}
                   handleCheckOut={(e) => setCheckOUT(e.target.value)}
                   handleGuest={(e) => setNoOfGuest(e.target.value)}

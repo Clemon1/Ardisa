@@ -95,7 +95,6 @@ export default function page() {
                   title={product.title}
                   price={product.price}
                   color={!darkMode ? "gray.800" : "#F9F8FF"}
-                  rating={product.ratings}
                   address={product.address}
                   link={product._id}
                 />
@@ -128,7 +127,6 @@ export default function page() {
                     title={product.place.title}
                     price={product.price}
                     color={!darkMode ? "gray.800" : "#F9F8FF"}
-                    rating={product.ratings}
                     address={product.address}
                     link={product._id}
                   />

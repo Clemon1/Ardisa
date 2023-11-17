@@ -265,7 +265,7 @@ const roomRecommendation = (req, res) => __awaiter(void 0, void 0, void 0, funct
         })
             .populate("place")
             .limit(2)
-            .sort("created_at DESC")
+            .sort({ createdAt: -1 })
             .exec();
         res.status(200).json(recommendedRentals);
     }

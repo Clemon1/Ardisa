@@ -80,10 +80,10 @@ const ProductCard = ({
             <Text fontSize={17} fontWeight={600} noOfLines={1}>
               {title}
             </Text>
-            <Flex>
+            {/* <Flex>
               <Icon as={AiFillStar} color={"yellow.400"} fontSize={22} />
               <Text fontWeight={400}>{rating}</Text>
-            </Flex>
+            </Flex> */}
           </Flex>
           <Flex width={"full"}>
             <Text
